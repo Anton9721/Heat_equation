@@ -9,6 +9,8 @@ heat_equation.cpp
 heat_equation.cpython-312-x86_64-linux-gnu.so
 heat_equation.html
 
+python_test.ipynb
+
 
 # git status          # Проверяем статус
 # git add .           # Добавляем все изменения
