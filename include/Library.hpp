@@ -8,8 +8,10 @@
 #include <string>
 #include <span>
 
-std::vector<double> data_temp(std::string solver_name, std::vector<double> initial_conditions, 
-    const double a, const int n_x, const int n_t, const double length, const double t_max, const double h, const double u_c);
-
-
-
+void data_temp(
+    int solver_name,
+    double* result_data,
+    const double* initial_conditions,
+    double a, int n_x, int n_t,
+    double length, double t_max,
+    double h, double u_c);

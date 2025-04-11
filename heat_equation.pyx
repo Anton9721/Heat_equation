@@ -6,67 +6,42 @@ from libcpp.vector cimport vector
 from cython.parallel import prange
 from libc.math cimport sin, exp
 
-
+    
 cdef extern from "include/Library.hpp":
-    vector[double] data_temp(string solver_name, 
-                                vector[double] initial_conditions, 
-                                double a, 
-                                int n_x, 
-                                int n_t, 
-                                double length,
-                                double t_max,
-                                double h, 
-                                double u_c)
+    void data_temp(
+        int solver_num,
+        double* result_data,
+        const double* initial_conditions,
+        double a, int n_x, int n_t,
+        double length, double t_max,
+        double h, double u_c)
+
+def temp_result(int solver_num, 
+               initial_conditions,
+               result,
+               double a, int n_x, int n_t, 
+               double length, double t_max, 
+               double h=0.0, double u_c=0.0):
     
-
-cdef vector[double] python_list_to_vector(cnp.ndarray[cnp.double_t, ndim=1] np_array):
-    cdef vector[double] cpp_vector
-    for i in range(np_array.shape[0]):
-        cpp_vector.push_back(np_array[i])
-    return cpp_vector
-
-def vector_to_numpy_2d(vector[double] cpp_vector, int n_t, int n_x):
-    return np.array(cpp_vector, dtype=np.float64).reshape((n_t, n_x))
-
-def vector_to_python_list(vector[double] cpp_vector):
-    return [cpp_vector[i] for i in range(cpp_vector.size())]
-
-# Численное рещение
-def temp_result(solver_name: str, initial_conditions, 
-                     a: float, n_x: int, n_t: int, 
-                     length: float, t_max: float, h: float = 0, u_c: float = 0):
-    all_solvers = ['Euler_method', "Nicholson_Crunk_method", "Nicholson_Crunk_method_modified"]
-    
-    if solver_name not in all_solvers:
-        print(f"Не существует метода решения {solver_name}. Проверьте правильность написания!")
-        print(f"Допустимые решатели: {all_solvers}")
-        return None    
-
-    if isinstance(initial_conditions, list):
-        initial_conditions = np.array(initial_conditions, dtype=np.float64)
-
-    cdef string cpp_solver_name = solver_name.encode('utf-8')
-    cdef vector[double] cpp_initial_conditions = python_list_to_vector(initial_conditions)
-
-    if solver_name == 'Euler_method':
+    if solver_num == 0:
         dx = length / (n_x - 1)
         dt = t_max / (n_t - 1)
         r = (a * a * dt) / (dx * dx)
         if r >= 0.5:
             print(f"Метод неустойчив: r = {r}")
             return 0
-    
-    cdef vector[double] result_vector = data_temp(cpp_solver_name, 
-                                                       cpp_initial_conditions, 
-                                                       a, 
-                                                       n_x, 
-                                                       n_t, 
-                                                       length, 
-                                                       t_max,
-                                                       h,
-                                                       u_c)
 
-    return vector_to_numpy_2d(result_vector, n_t, n_x)
+    cdef cnp.double_t [:] init_view = np.ascontiguousarray(initial_conditions, dtype=np.float64)
+    cdef cnp.double_t [:, :] result_view = np.ascontiguousarray(result, dtype=np.float64)    
+
+    data_temp(
+        solver_num,
+        &result_view[0,0],
+        &init_view[0],
+        a, n_x, n_t,
+        length, t_max,
+        h, u_c
+    )
 
 
 # Аналитическое решение
@@ -78,7 +53,7 @@ cdef double Temp_analit_function(double x, double t, double a, double u_0, doubl
     
     for k in range(terms):
         n = 2 * k + 1
-        coef = n * 3.141592653589793 / length  # np.pi заменено на константу
+        coef = n * 3.141592653589793 / length  
         term = sin(coef * x) * exp(-(a * coef) ** 2 * t) / n
         value += term
     

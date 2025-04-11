@@ -1,43 +1,30 @@
 #pragma once
-
 #include "Array2D.hpp"
-#include "Writer.hpp"
-#include <span>
 #include <vector>
-#include <cmath>
-#include <numbers>
-#include <omp.h>
+#include <span>
 
-
-class Solver{
+class Solver {
 public:
-    virtual void solve(Array2D<double> &temp_data, std::vector<double> initial_conditions, 
-        const double a, const int n_x, const int n_t, const double length, const double t_max) const = 0;
-    virtual ~Solver() = default;          
-
+    virtual void solve(Array2D& temp_data, std::span<const double> initial_conditions,
+        double a, int n_x, int n_t, double length, double t_max) const = 0;
+    virtual ~Solver() = default;
 };
 
-//Решение методом Эйлера
-class Solver_Euler : public Solver
-{
-    public:
-        void solve(Array2D<double> &temp_data, std::vector<double> initial_conditions, 
-                  const double a, const int n_x, const int n_t, const double length, const double t_max) const override;
+class Solver_Euler : public Solver {
+public:
+    void solve(Array2D& temp_data, std::span<const double> initial_conditions,
+              double a, int n_x, int n_t, double length, double t_max) const override;
 };
 
-
-//Решение методом Кранка-Николсона
-class Solver_Сrank_Nicolson : public Solver
-{
-    public:
-        void solve(Array2D<double> &temp_data, std::vector<double> initial_conditions, 
-                  const double a, const int n_x, const int n_t, const double length, const double t_max) const override;
+class Solver_Crank_Nicolson : public Solver {
+public:
+    void solve(Array2D& temp_data, std::span<const double> initial_conditions,
+              double a, int n_x, int n_t, double length, double t_max) const override;
 };
 
-//Решение методом Кранка-Николсона (Охлаждение Ньютона)
 class Solver_Crank_Nicolson_modified{
     public:
-        void solve(Array2D<double> &temp_data, std::vector<double> initial_conditions, 
-            const double a, const int n_x, const int n_t, 
-            const double length, const double t_max, const double h, const double u_c) const;
+        void solve(Array2D& temp_data, std::span<const double> initial_conditions, 
+            double a, const int n_x, int n_t, 
+            double length, double t_max, double h, double u_c) const;
 };

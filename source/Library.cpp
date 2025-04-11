@@ -1,53 +1,30 @@
-# include "Library.hpp"
+#include "Library.hpp"
+#include "Array2D.hpp"
+#include "Solver.hpp"
 
-
-
-std::vector<double> data_temp(std::string solver_name, 
-    std::vector<double> initial_conditions,
-    double a, int n_x, int n_t, 
-    double length, double t_max, 
+void data_temp(
+    int solver_num,
+    double* result_data,
+    const double* initial_conditions,
+    double a, int n_x, int n_t,
+    double length, double t_max,
     double h, double u_c)
 {
-    Array2D<double> temp_data(n_t, n_x);
-    std::vector<double> data_result;
+    Array2D temp_data(n_t, n_x, result_data);
+    std::span<const double> init_span(initial_conditions, n_x);
 
-    if (solver_name == "Euler_method")
-    {
+    if (solver_num == 0) {
         Solver_Euler solver;
-        solver.solve(temp_data, initial_conditions, a, n_x, n_t, length, t_max);
-
-        for (size_t i_t = 0; i_t < n_t; ++i_t) {
-            for (size_t i_x = 0; i_x < n_x; ++i_x) {
-                data_result.push_back(temp_data(i_t, i_x));
-                }
-            }
+        solver.solve(temp_data, init_span, a, n_x, n_t, length, t_max);       
     }
-
-    else if (solver_name == "Nicholson_Crunk_method")
-    {
-        Solver_Сrank_Nicolson solver;
-        solver.solve(temp_data, initial_conditions, a, n_x, n_t, length, t_max);
-
-        for (size_t i_t = 0; i_t < n_t; ++i_t) {
-            for (size_t i_x = 0; i_x < n_x; ++i_x) {
-                data_result.push_back(temp_data(i_t, i_x));
-                }
-            }
+    else if (solver_num == 1) {
+        Solver_Euler solver;
+        solver.solve(temp_data, init_span, a, n_x, n_t, length, t_max);
     }
-
-
-    else if (solver_name == "Nicholson_Crunk_method_modified")
-    {
+    else if (solver_num == 2) {
         Solver_Crank_Nicolson_modified solver;
-        solver.solve(temp_data, initial_conditions, a, n_x, n_t, length, t_max, h, u_c);
-
-        for (size_t i_t = 0; i_t < n_t; ++i_t) {
-            for (size_t i_x = 0; i_x < n_x; ++i_x) {
-                data_result.push_back(temp_data(i_t, i_x));
-                }
-            }
+        solver.solve(temp_data, init_span, a, n_x, n_t, length, t_max, h, u_c);
     }
-
-    return data_result;
 }
+
 
